@@ -1,0 +1,101 @@
+import java.util.Scanner;
+
+// Abstract class Expense
+abstract class Expense {
+    protected String name;
+    protected double amount;
+
+    public Expense(String name, double amount) {
+        this.name = name;
+        this.amount = amount;
+    }
+
+    public abstract double getAmount();
+}
+
+// HomeLoan class inheriting from Expense
+class HomeLoan extends Expense {
+    private double loanAmount;
+    private double interestRate;
+    private int months;
+
+    public HomeLoan(double loanAmount, double interestRate, int months) {
+        super("Home Loan", 0);
+        this.loanAmount = loanAmount;
+        this.interestRate = interestRate;
+        this.months = months;
+        calculateRepayment();
+    }
+
+    // Calculate monthly repayment
+    private void calculateRepayment() {
+        double monthlyInterestRate = (interestRate / 100) / 12;
+        this.amount = loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, months)) / (Math.pow(1 + monthlyInterestRate, months) - 1);
+    }
+
+    @Override
+    public double getAmount() {
+        return this.amount;
+    }
+}
+
+public class BudgetPlanner {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        double[] expenses = new double[5];
+
+        System.out.print("Gross monthly income: ");
+        double grossIncome = scanner.nextDouble();
+
+        System.out.print("Monthly tax deducted: ");
+        double taxDeducted = scanner.nextDouble();
+
+        String[] expenseTypes = {"Groceries", "Water and lights", "Travel costs", "Cellphone", "Other expenses"};
+        for (int i = 0; i < expenseTypes.length; i++) {
+            System.out.print(expenseTypes[i] + ": ");
+            expenses[i] = scanner.nextDouble();
+        }
+
+        System.out.print("Rent or buy? (type 'rent' or 'buy'): ");
+        String accommodationChoice = scanner.next();
+
+        double accommodationCost = 0;
+
+        if (accommodationChoice.equalsIgnoreCase("buy")) {
+            System.out.print("Property price: ");
+            double purchasePrice = scanner.nextDouble();
+
+            System.out.print("Deposit: ");
+            double deposit = scanner.nextDouble();
+
+            System.out.print("Interest rate: ");
+            double interestRate = scanner.nextDouble();
+
+            System.out.print("Repayment months (between 240 and 360): ");
+            int months = scanner.nextInt();
+
+            double loanAmount = purchasePrice - deposit;
+            HomeLoan homeLoan = new HomeLoan(loanAmount, interestRate, months);
+            accommodationCost = homeLoan.getAmount();
+
+            if (accommodationCost > grossIncome / 3) {
+                System.out.println("Warning: Home loan repayment exceeds a third of your income.");
+            }
+        } else {
+            System.out.print("Rent amount: ");
+            accommodationCost = scanner.nextDouble();
+        }
+
+        double totalExpenses = accommodationCost;
+        for (double expense : expenses) {
+            totalExpenses += expense;
+        }
+
+        double availableIncome = grossIncome - taxDeducted - totalExpenses;
+
+        System.out.println("Money left after expenses: " + availableIncome);
+        System.out.println(availableIncome > 0 ? "You have money left." : "You're spending more than you earn.");
+
+        scanner.close();
+    }
+}
